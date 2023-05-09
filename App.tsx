@@ -31,6 +31,12 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
+interface ListType {
+  special: boolean;
+  color: string;
+  text?: string;
+}
+
 function Section({children, title}: SectionProps): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
@@ -72,7 +78,8 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const [arrayList, setArrayList] = useState<{color: string}[]>();
+  const [arrayList, setArrayList] = useState<ListType[]>();
+  // const [specialHeader, setSpecialHeader] = useState<{color: string}[]>();
   const [n, setN] = useState<number>(100);
 
   useEffect(() => {
@@ -82,10 +89,23 @@ function App(): JSX.Element {
 
   const onInit = (): void => {
     console.log('current color', Appearance.getColorScheme());
-    const out: {color: string}[] = [];
+    const out: ListType[] = [];
+
+    out.push({
+      special: true,
+      color: getRandomBackgroundColor(),
+      text: 'Speial header 01',
+    });
+    out.push({
+      special: true,
+      color: getRandomBackgroundColor(),
+      text: 'Speial header 02',
+    });
     for (let i = 0; i < n; i++) {
       out.push({
+        special: false,
         color: getRandomBackgroundColor(),
+        text: i.toString(),
       });
     }
     setArrayList(out);
@@ -121,7 +141,7 @@ function App(): JSX.Element {
         keyExtractor={(item, index) => 'Item:' + index.toString()}
         renderItem={item => (
           <View style={{backgroundColor: item.item.color, height: 100}}>
-            <Text>{item.index}</Text>
+            <Text>{item.item?.text}</Text>
           </View>
         )}
         // ListHeaderComponent={<HeaderComponent />}
