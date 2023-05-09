@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  FlatList,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -55,11 +56,34 @@ function Section({children, title}: SectionProps): JSX.Element {
   );
 }
 
+const getRandom = () => {
+  return Math.random() * 255;
+};
+
+const getRandomBackgroundColor: () => void = () => {
+  return `rgba(${getRandom()},${getRandom()},${getRandom()}, 0.3)`;
+};
+
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  };
+
+  const getItem = (n: number): JSX.Element[] => {
+    const out: JSX.Element[] = [];
+    for (let i = 0; i < n; i++) {
+      out.push(
+        // <>
+        <View
+          key={'getItem' + i}
+          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+        />,
+        // </>,
+      );
+    }
+    return out;
   };
 
   return (
@@ -69,28 +93,33 @@ function App(): JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
+        contentInsetAdjustmentBehavior="never"
+        style={{
+          height: '100%',
+          // flex: 1,
+          ...backgroundStyle,
+          backgroundColor: getRandomBackgroundColor(),
+          // backgroundColor: 'rgba(255, 255, 255)',
+        }}>
         <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+        />
+        <View
+          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+        />
+        <View
+          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+        />
+        {getItem(100)}
+
+        {/* <FlatList
+          data={[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]}
+          renderItem={() => (
+            <View
+              style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+            />
+          )}
+        /> */}
       </ScrollView>
     </SafeAreaView>
   );
