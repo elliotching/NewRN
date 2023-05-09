@@ -5,7 +5,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   FlatList,
@@ -16,6 +16,7 @@ import {
   Text,
   useColorScheme,
   View,
+  Appearance,
 } from 'react-native';
 
 import {
@@ -56,11 +57,11 @@ function Section({children, title}: SectionProps): JSX.Element {
   );
 }
 
-const getRandom = () => {
+const getRandom = (): number => {
   return Math.random() * 255;
 };
 
-const getRandomBackgroundColor: () => void = () => {
+const getRandomBackgroundColor = (): string => {
   return `rgba(${getRandom()},${getRandom()},${getRandom()}, 0.3)`;
 };
 
@@ -71,56 +72,60 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const getItem = (n: number): JSX.Element[] => {
-    const out: JSX.Element[] = [];
+  const [arrayList, setArrayList] = useState<{color: string}[]>();
+  const [n, setN] = useState<number>(100);
+
+  useEffect(() => {
+    onInit();
+    return () => onInit();
+  }, []);
+
+  const onInit = (): void => {
+    console.log('current color', Appearance.getColorScheme());
+    const out: {color: string}[] = [];
     for (let i = 0; i < n; i++) {
-      out.push(
-        // <>
-        <View
-          key={'getItem' + i}
-          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
-        />,
-        // </>,
-      );
+      out.push({
+        color: getRandomBackgroundColor(),
+      });
     }
-    return out;
+    setArrayList(out);
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="never"
-        style={{
-          height: '100%',
-          // flex: 1,
-          ...backgroundStyle,
-          backgroundColor: getRandomBackgroundColor(),
-          // backgroundColor: 'rgba(255, 255, 255)',
-        }}>
-        <View
-          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
-        />
-        <View
-          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
-        />
-        <View
-          style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
-        />
-        {getItem(100)}
+  // const getItem = (n: number): JSX.Element[] => {
+  //   const out: JSX.Element[] = [];
+  //   for (let i = 0; i < n; i++) {
+  //     out.push(
+  //       // <>
+  //       <View
+  //         key={'getItem' + i}
+  //         style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
+  //       />,
+  //       // </>,
+  //     );
+  //   }
+  //   return out;
+  // };
 
-        {/* <FlatList
-          data={[{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}]}
-          renderItem={() => (
-            <View
-              style={{backgroundColor: getRandomBackgroundColor(), height: 100}}
-            />
-          )}
-        /> */}
-      </ScrollView>
+  return (
+    <SafeAreaView
+      style={{backgroundColor: '#ff000040', flex: 1, borderWidth: 4}}>
+      {/* <View style={{backgroundColor: '#ff000010'}}></View> */}
+      <StatusBar
+        // barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        // backgroundColor={backgroundStyle.backgroundColor}
+        backgroundColor={'#ffff00'}
+      />
+      <FlatList
+        style={{}}
+        data={arrayList}
+        keyExtractor={(item, index) => 'Item:' + index.toString()}
+        renderItem={item => (
+          <View style={{backgroundColor: item.item.color, height: 100}}>
+            <Text>{item.index}</Text>
+          </View>
+        )}
+        // ListHeaderComponent={<HeaderComponent />}
+      />
     </SafeAreaView>
   );
 }
