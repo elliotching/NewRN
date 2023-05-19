@@ -4,9 +4,15 @@
  *
  * @format
  */
-
-import React, {useEffect, useState} from 'react';
+import React, {
+    useEffect,
+    useState,
+    useReducer,
+    useRef,
+    useLayoutEffect,
+} from 'react';
 import type {PropsWithChildren} from 'react';
+import {Log} from './log';
 import {
     FlatList,
     SafeAreaView,
@@ -16,7 +22,9 @@ import {
     Text,
     useColorScheme,
     View,
+    TouchableOpacity,
     Appearance,
+    ListRenderItemInfo,
 } from 'react-native';
 
 import {
@@ -70,7 +78,20 @@ const getRandom = (): number => {
 const getRandomBackgroundColor = (): string => {
     return `rgba(${getRandom()},${getRandom()},${getRandom()}, 0.3)`;
 };
+type StateType = {
+    name: string;
+    withArray: boolean;
+};
 
+type ActionType = {
+    type: string;
+    payload?: any;
+};
+
+const initialState: StateType = {
+    name: 'unknown',
+    withArray: false,
+};
 function App(): JSX.Element {
     const isDarkMode = useColorScheme() === 'dark';
 
@@ -78,9 +99,46 @@ function App(): JSX.Element {
         backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
     };
 
+    let flatListRef = useRef<FlatList<ListType>>(null);
+
     const [arrayList, setArrayList] = useState<ListType[]>();
+
     // const [specialHeader, setSpecialHeader] = useState<{color: string}[]>();
+
     const [n, setN] = useState<number>(100);
+
+    const reducer = (state: StateType, action: ActionType): StateType => {
+        switch (action.type) {
+            case 'a':
+                if (state.name == 'updated') {
+                    return {withArray: false, name: 'unknown'};
+                } else {
+                    // setTimeout(() => {
+                    //     flatListRef.current?.scrollToOffset({
+                    //         offset: 2000,
+                    //         animated: false,
+                    //     });
+                    // }, 100);
+                    return {withArray: true, name: 'updated'};
+                }
+
+            default:
+                return state;
+        }
+    };
+
+    const [stateA, dispatchA] = useReducer(reducer, initialState);
+
+    useLayoutEffect(() => {
+        if (stateA.withArray) {
+            setTimeout(() => {
+                flatListRef.current?.scrollToOffset({
+                    offset: 2000,
+                    animated: true,
+                });
+            }, 100);
+        }
+    }, [stateA.withArray]);
 
     useEffect(() => {
         onInit();
@@ -126,27 +184,61 @@ function App(): JSX.Element {
     //   return out;
     // };
 
+    const MyArrayItem = (item: ListRenderItemInfo<ListType>) => {
+        return (
+            <TouchableOpacity
+                style={{
+                    backgroundColor: item.item.color,
+                    height: 100,
+                }}>
+                <Text>{item.item?.text}</Text>
+                {/* <Text>{item?.text}</Text> */}
+            </TouchableOpacity>
+        );
+    };
+
     return (
-        <SafeAreaView
-            style={{backgroundColor: '#ff000040', flex: 1, borderWidth: 4}}>
+        <SafeAreaView style={{backgroundColor: '#ff000040', flex: 1}}>
             {/* <View style={{backgroundColor: '#ff000010'}}></View> */}
-            <StatusBar
+            {/* <StatusBar
                 // barStyle={isDarkMode ? 'light-content' : 'dark-content'}
                 // backgroundColor={backgroundStyle.backgroundColor}
                 backgroundColor={'#ffff00'}
-            />
-            <FlatList
-                style={{}}
-                data={arrayList}
-                keyExtractor={(item, index) => 'Item:' + index.toString()}
-                renderItem={item => (
-                    <View
-                        style={{backgroundColor: item.item.color, height: 100}}>
-                        <Text>{item.item?.text}</Text>
-                    </View>
-                )}
-                // ListHeaderComponent={<HeaderComponent />}
-            />
+            /> */}
+            <>
+                <TouchableOpacity
+                    style={{height: 100, backgroundColor: '#ff000040'}}
+                    onPress={() => {
+                        dispatchA({type: 'a'});
+                    }}
+                />
+                <FlatList
+                    ref={flatListRef}
+                    style={{flex: 1}}
+                    data={!!stateA.withArray ? arrayList : null}
+                    keyExtractor={(item, index) => 'Item:' + index.toString()}
+                    // onScrollEndDrag={event => {
+                    //     Log(
+                    //         'onScrollEndDrag' +
+                    //             event.nativeEvent.contentOffset.y,
+                    //     );
+                    // }}
+                    onMomentumScrollEnd={event => {
+                        Log(
+                            'onMomentumScrollEnd' +
+                                event.nativeEvent.contentOffset.y,
+                        );
+                    }}
+                    renderItem={item => <MyArrayItem item={item.item} />}
+                    // ListHeaderComponent={<HeaderComponent />}
+                />
+                <TouchableOpacity
+                    style={{height: 100, backgroundColor: '#ff000040'}}>
+                    <Text>
+                        {stateA.name} and {(!!stateA.withArray).toString()}
+                    </Text>
+                </TouchableOpacity>
+            </>
         </SafeAreaView>
     );
 }
